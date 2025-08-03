@@ -17,12 +17,22 @@ const { v7: uuidv7 } = require("uuid");
  */
 async function createPrintWindow() {
   const windowOptions = {
-    width: 100, // 窗口宽度
-    height: 100, // 窗口高度
-    show: false, // 不显示
+    // width: 100, // 窗口宽度
+    // height: 100, // 窗口高度
+    // show: false, // 不显示
+    // webPreferences: {
+    //   contextIsolation: false, // 设置此项为false后，才可在渲染进程中使用electron api
+    //   nodeIntegration: true,
+    // },
+    width: 500, // 窗口宽度
+    height: 500, // 窗口高度
+    backgroundColor: '#fff',
+    show: true, // 不显示
     webPreferences: {
       contextIsolation: false, // 设置此项为false后，才可在渲染进程中使用electron api
       nodeIntegration: true,
+      devTools: true,
+
     },
     // 为窗口设置背景色可能优化字体模糊问题
     // https://www.electronjs.org/zh/docs/latest/faq#文字看起来很模糊这是什么原因造成的怎么解决这个问题呢
@@ -35,6 +45,7 @@ async function createPrintWindow() {
   // 加载打印渲染进程页面
   let printHtml = path.join("file://", app.getAppPath(), "/assets/print.html");
   PRINT_WINDOW.webContents.loadURL(printHtml);
+  PRINT_WINDOW.webContents.openDevTools()
 
   // 未打包时打开开发者工具
   // if (!app.isPackaged) {
@@ -53,6 +64,14 @@ async function createPrintWindow() {
  */
 function initPrintEvent() {
   ipcMain.on("do", async (event, data) => {
+
+    const pdfPath = path.join(__dirname, './test2.pdf');
+    console.log("pdfPath:", pdfPath);
+    console.log("data:", data);
+
+    Object.assign(data, { type: 'pdf' })
+
+
     let socket = null;
     if (data.clientType === "local") {
       socket = SOCKET_SERVER.sockets.sockets.get(data.socketId);
@@ -90,8 +109,7 @@ function initPrintEvent() {
     });
     if (printerError) {
       log(
-        `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${
-          data.templateId
+        `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${data.templateId
         }】 打印失败，打印机异常，打印机：${data.printer}`,
       );
       socket &&
@@ -160,13 +178,12 @@ function initPrintEvent() {
         })
         .then((pdfData) => {
           fs.writeFileSync(pdfPath, pdfData);
+          console.log("pdfPath:", pdfPath);
           printPdf(pdfPath, deviceName, data)
             .then(() => {
               log(
-                `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${
-                  data.templateId
-                }】 打印成功，打印类型：PDF，打印机：${deviceName}，页数：${
-                  data.pageNum
+                `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${data.templateId
+                }】 打印成功，打印类型：PDF，打印机：${deviceName}，页数：${data.pageNum
                 }`,
               );
               if (socket) {
@@ -181,11 +198,10 @@ function initPrintEvent() {
               logPrintResult("success");
             })
             .catch((err) => {
+              console.log("err:", err);
               log(
-                `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${
-                  data.templateId
-                }】 打印失败，打印类型：PDF，打印机：${deviceName}，原因：${
-                  err.message
+                `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${data.templateId
+                }】 打印失败，打印类型：PDF，打印机：${deviceName}，原因：${err && err.message
                 }`,
               );
               socket &&
@@ -214,10 +230,8 @@ function initPrintEvent() {
       printPdf(data.pdf_path, deviceName, data)
         .then(() => {
           log(
-            `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${
-              data.templateId
-            }】 打印成功，打印类型：URL_PDF，打印机：${deviceName}，页数：${
-              data.pageNum
+            `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${data.templateId
+            }】 打印成功，打印类型：URL_PDF，打印机：${deviceName}，页数：${data.pageNum
             }`,
           );
           if (socket) {
@@ -233,10 +247,8 @@ function initPrintEvent() {
         })
         .catch((err) => {
           log(
-            `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${
-              data.templateId
-            }】 打印失败，打印类型：URL_PDF，打印机：${deviceName}，原因：${
-              err.message
+            `${data.replyId ? "中转服务" : "插件端"} ${socket.id} 模板 【${data.templateId
+            }】 打印失败，打印类型：URL_PDF，打印机：${deviceName}，原因：${err.message
             }`,
           );
           socket &&
@@ -284,17 +296,14 @@ function initPrintEvent() {
       (success, failureReason) => {
         if (success) {
           log(
-            `${data.replyId ? "中转服务" : "插件端"} ${socket?.id} 模板 【${
-              data.templateId
-            }】 打印成功，打印类型 HTML，打印机：${deviceName}，页数：${
-              data.pageNum
+            `${data.replyId ? "中转服务" : "插件端"} ${socket?.id} 模板 【${data.templateId
+            }】 打印成功，打印类型 HTML，打印机：${deviceName}，页数：${data.pageNum
             }`,
           );
           logPrintResult("success");
         } else {
           log(
-            `${data.replyId ? "中转服务" : "插件端"} ${socket?.id} 模板 【${
-              data.templateId
+            `${data.replyId ? "中转服务" : "插件端"} ${socket?.id} 模板 【${data.templateId
             }】 打印失败，打印类型 HTML，打印机：${deviceName}，原因：${failureReason}`,
           );
           logPrintResult("failed", failureReason);

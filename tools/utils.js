@@ -7,6 +7,7 @@ const Store = require("electron-store");
 const { getPaperSizeInfo, getPaperSizeInfoAll } = require("win32-pdf-printer");
 const { v7: uuidv7 } = require("uuid");
 const log = require("./log");
+require('./puppeteer');
 
 Store.initRenderer();
 
@@ -107,7 +108,7 @@ function addressIpv6() {
  */
 function addressMac() {
   return new Promise((resolve) => {
-    address.mac(function(err, addr) {
+    address.mac(function (err, addr) {
       if (err) {
         resolve(err);
       } else {
@@ -123,7 +124,7 @@ function addressMac() {
  */
 function addressAll() {
   return new Promise((resolve) => {
-    address.mac(function(err, mac) {
+    address.mac(function (err, mac) {
       if (err) {
         resolve({ ip: address.ip(), ipv6: address.ipv6(), mac: err });
       } else {
@@ -424,17 +425,25 @@ function initServeEvent(server) {
      * @description: client 常规打印任务
      */
     socket.on("news", (data) => {
-      if (data) {
-        PRINT_RUNNER.add((done) => {
-          data.socketId = socket.id;
-          data.taskId = uuidv7();
-          data.clientType = "local";
-          PRINT_WINDOW.webContents.send("print-new", data);
-          MAIN_WINDOW.webContents.send("printTask", true);
-          PRINT_RUNNER_DONE[data.taskId] = done;
-        });
-      }
+      console.log("------- 自定义获取数据【data】-------:", data);
+
+
+      // if (data) {
+      //   PRINT_RUNNER.add((done) => {
+      //     data.socketId = socket.id;
+      //     data.taskId = uuidv7();
+      //     data.clientType = "local";
+      //     // PRINT_WINDOW.webContents.send("print-new", data);
+      //     PRINT_WINDOW.webContents.send(data.type === 'custom-print' ? 'custom-print' : 'print-new', data);
+      //     MAIN_WINDOW.webContents.send("printTask", true);
+      //     PRINT_RUNNER_DONE[data.taskId] = done;
+      //   });
+      // }
     });
+
+    /**
+     * 自定义打印
+     */
 
     /**
      * @description: client 分批打印任务

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puppeteer PDF 测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .test-content {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Puppeteer PDF 生成测试</h1>
+
+    <div class="test-content">
+        <h2>测试内容</h2>
+        <p>这是一个测试页面，用于验证 Puppeteer PDF 生成功能。</p>
+        <ul>
+            <li>支持中文内容</li>
+            <li>支持样式渲染</li>
+            <li>支持图片加载</li>
+            <li>支持表格布局</li>
+        </ul>
+
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>项目</th>
+                    <th>状态</th>
+                    <th>备注</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PDF 生成</td>
+                    <td>✅ 正常</td>
+                    <td>使用 Puppeteer</td>
+                </tr>
+                <tr>
+                    <td>自动下载</td>
+                    <td>✅ 正常</td>
+                    <td>浏览器自动下载</td>
+                </tr>
+                <tr>
+                    <td>中文支持</td>
+                    <td>✅ 正常</td>
+                    <td>UTF-8 编码</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <button onclick="generatePDF()">生成 PDF 并下载</button>
+        <button onclick="testDownload()">测试下载功能</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function showResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${isSuccess ? 'success' : 'error'}">${message}</div>`;
+        }
+
+        async function generatePDF() {
+            try {
+                showResult('正在生成 PDF...', true);
+
+                const htmlContent = document.querySelector('.test-content').outerHTML;
+
+                const response = await fetch('http://127.0.0.1:10000/test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: {
+                            html: htmlContent
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    // 获取文件名
+                    const contentDisposition = response.headers.get('Content-Disposition');
+                    let filename = 'report.pdf';
+                    if (contentDisposition) {
+                        const match = contentDisposition.match(/filename="(.+)"/);
+                        if (match) {
+                            filename = match[1];
+                        }
+                    }
+
+                    // 创建下载链接
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    showResult(`PDF 生成成功！文件名: ${filename}`, true);
+                } else {
+                    const errorData = await response.json();
+                    showResult(`生成失败: ${errorData.error}`, false);
+                }
+            } catch (error) {
+                showResult(`请求失败: ${error.message}`, false);
+            }
+        }
+
+        async function testDownload() {
+            try {
+                showResult('测试下载功能...', true);
+
+                // 这里可以测试下载已生成的文件
+                const response = await fetch('http://127.0.0.1:10000/download/test.pdf');
+
+                if (response.ok) {
+                    showResult('下载功能正常', true);
+                } else {
+                    showResult('下载功能测试失败', false);
+                }
+            } catch (error) {
+                showResult(`下载测试失败: ${error.message}`, false);
+            }
+        }
+    </script>
+</body>
+
+</html>

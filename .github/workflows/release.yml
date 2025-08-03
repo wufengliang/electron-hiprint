@@ -32,7 +32,6 @@ jobs:
             echo "✅ package.json 里的 version 和 tag ($TAG_NAME) 一致，继续执行。"
           fi
 
-
   build-win:
     name: Windows 打包
     runs-on: windows-latest
@@ -142,7 +141,6 @@ jobs:
             out/*.tar.xz
             out/*.deb
 
-
   release:
     name: 自动发布 Release
     needs: [build-win, build-mac, build-linux]
@@ -197,4 +195,4 @@ jobs:
             artifacts/linux/**
           prerelease: ${{ contains(github.ref_name, 'beta') }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
