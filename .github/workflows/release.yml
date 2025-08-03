@@ -1,6 +1,7 @@
 name: Release Build
 
 on:
+  workflow_dispatch:
   push:
     # 仅匹配 1.2.3 或 1.2.3-beta1 这样的 tag，例如 1.0.0、2.3.4-beta2
     tags:
