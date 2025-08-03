@@ -169,20 +169,20 @@ jobs:
           name: linux-builds
           path: artifacts/linux
 
-      # 自动生成 Release Notes（使用 tag 相关 commit 信息）
-      - name: 生成 Release Notes
-        id: changelog
-        run: |
-          TAG_NAME="${GITHUB_REF##refs/tags/}"
-          PREV_TAG=$(git tag --sort=-creatordate | grep -B1 "^${TAG_NAME}$" | head -n1)
-          if [ -z "$PREV_TAG" ]; then
-            git log -1 --pretty=format:"%h %s" "$TAG_NAME" > release_notes.txt
-          else
-            git log "$PREV_TAG..$TAG_NAME" --pretty=format:"- %h %s" > release_notes.txt
-          fi
-          echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-          cat release_notes.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+      # # 自动生成 Release Notes（使用 tag 相关 commit 信息）
+      # - name: 生成 Release Notes
+      #   id: changelog
+      #   run: |
+      #     TAG_NAME="${GITHUB_REF##refs/tags/}"
+      #     PREV_TAG=$(git tag --sort=-creatordate | grep -B1 "^${TAG_NAME}$" | head -n1)
+      #     if [ -z "$PREV_TAG" ]; then
+      #       git log -1 --pretty=format:"%h %s" "$TAG_NAME" > release_notes.txt
+      #     else
+      #       git log "$PREV_TAG..$TAG_NAME" --pretty=format:"- %h %s" > release_notes.txt
+      #     fi
+      #     echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+      #     cat release_notes.txt >> $GITHUB_OUTPUT
+      #     echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 发布 Release
         uses: softprops/action-gh-release@v2
