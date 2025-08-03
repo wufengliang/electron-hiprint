@@ -36,7 +36,7 @@ jobs:
   build-win:
     name: Windows 打包
     runs-on: windows-latest
-    needs: check-version
+    # needs: check-version
     outputs:
       artifacts-path: ${{ steps.set-artifacts-path.outputs.result }}
     steps:
@@ -74,7 +74,7 @@ jobs:
   build-mac:
     name: macOS 打包
     runs-on: macos-latest
-    needs: check-version
+    # needs: check-version
     steps:
       - name: 拉取代码
         uses: actions/checkout@v3
@@ -111,7 +111,7 @@ jobs:
   build-linux:
     name: Linux 打包
     runs-on: ubuntu-latest
-    needs: check-version
+    # needs: check-version
     steps:
       - name: 拉取代码
         uses: actions/checkout@v3
