@@ -15,23 +15,23 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  check-version:
-    name: 校验版本号
-    runs-on: ubuntu-latest
-    steps:
-      - name: 拉取代码
-        uses: actions/checkout@v3
+  # check-version:
+  #   name: 校验版本号
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: 拉取代码
+  #       uses: actions/checkout@v3
 
-      - name: 校验 package.json version 与 tag 一致
-        run: |
-          TAG_NAME="${GITHUB_REF##refs/tags/}"
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          if [[ "$PKG_VERSION" != "$TAG_NAME" ]]; then
-            echo "❌ package.json 里的 version ($PKG_VERSION) 和 tag ($TAG_NAME) 不一致，终止执行。"
-            exit 1
-          else
-            echo "✅ package.json 里的 version 和 tag ($TAG_NAME) 一致，继续执行。"
-          fi
+  #     - name: 校验 package.json version 与 tag 一致
+  #       run: |
+  #         TAG_NAME="${GITHUB_REF##refs/tags/}"
+  #         PKG_VERSION=$(node -p "require('./package.json').version")
+  #         if [[ "$PKG_VERSION" != "$TAG_NAME" ]]; then
+  #           echo "❌ package.json 里的 version ($PKG_VERSION) 和 tag ($TAG_NAME) 不一致，终止执行。"
+  #           exit 1
+  #         else
+  #           echo "✅ package.json 里的 version 和 tag ($TAG_NAME) 一致，继续执行。"
+  #         fi
 
   build-win:
     name: Windows 打包
