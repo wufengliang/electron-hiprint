@@ -125,7 +125,6 @@ app.post('/test', async (req, res) => {
         const url = './test.pdf';
         await page.emulateMediaType('print');
         const pdf = await page.pdf({
-            path: url,
             width: '72mm',
             height: '43mm',
         })
